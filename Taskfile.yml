@@ -1,7 +1,11 @@
 version: "3"
 
 vars:
-  AIR_ENABLED: "false"
+  # Change these
+  PROJECT_NAME: "example"
+  GO_MODULE: "github.com/username/project"
+
+  # Change only if you know what you are doing
 
 tasks:
   default:
@@ -10,15 +14,24 @@ tasks:
       - task -a
     silent: true
 
+  # TODO: add logic to init to bootstrap new projects
+  init:
+    desc: Initialize the project
+    cmds:
+      - go mod init ${GO_MODULE}
+    silent: true
+
   generate:
     cmds:
       - cd cmd/example && go generate .
 
   # Run application outside Docker
   start:
+    desc: Start the development server
     cmds:
-      - CUSTOM="Air" docker-compose up --build example
+      - CUSTOM="Air" docker compose up --build example
 
   stop:
+    desc: Stop the development server
     cmds:
-      - docker-compose down
+      - docker compose down

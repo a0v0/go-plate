@@ -15,6 +15,7 @@ services:
       - app
     ports:
       - "5432:5432"
+
   example:
     build:
       context: .
