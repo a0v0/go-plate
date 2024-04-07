@@ -14,3 +14,5 @@ Boilerplate for go projects.
 <!-- TODO: add fx dependency -->
 - Fx
 - ZeroLog
+<!-- TODO: add koanf for dependency injection -->
+- Koanf
