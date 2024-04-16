@@ -98,7 +98,7 @@ func Start(lifecycle fx.Lifecycle, cfg *config.Config, fiber *fiber.App, router 
 
 				err = database.MigrateModels()
 				if err != nil {
-					log.Fatal().Err(err).Msg("An unknown error occurred when to migrate the database!")
+					log.Fatal().Err(err).Msg("An unknown error occurred when trying to migrate the database!")
 				} else {
 
 					log.Info().Msg("Database migration was successful.")
