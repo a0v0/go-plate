@@ -5,7 +5,7 @@ package hook
 import (
 	"context"
 	"fmt"
-	"frisbane/internal/ent"
+	"go_plate/internal/ent"
 )
 
 // The AccountFunc type is an adapter to allow the use of ordinary

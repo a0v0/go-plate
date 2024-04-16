@@ -10,21 +10,24 @@ tasks:
       - task -a
     silent: true
 
-  # Run application outside Docker
+  install:
+    desc: Install development dependencies
+    silent: true
+    cmds:
+      - go mod tidy
+      - go install github.com/cosmtrek/air@latest
+      - echo "All dependencies installed successfully..."
+
   start:
     desc: Start the development server
     cmds:
-      - CUSTOM="Air" docker compose up --build example
+      - docker compose up -d
+      - air -c .air.toml
 
   stop:
     desc: Stop the development server
     cmds:
       - docker compose down
-
-  install:
-    desc: Install dependencies
-    cmds:
-      - go mod tidy
 
   gen:
     desc: Generate code

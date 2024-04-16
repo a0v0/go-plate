@@ -27,7 +27,7 @@ func (pd *ProfileDelete) Where(ps ...predicate.Profile) *ProfileDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (pd *ProfileDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, ProfileMutation](ctx, pd.sqlExec, pd.mutation, pd.hooks)
+	return withHooks(ctx, pd.sqlExec, pd.mutation, pd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -40,15 +40,7 @@ func (pd *ProfileDelete) ExecX(ctx context.Context) int {
 }
 
 func (pd *ProfileDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: profile.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
-				Column: profile.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(profile.Table, sqlgraph.NewFieldSpec(profile.FieldID, field.TypeString))
 	if ps := pd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

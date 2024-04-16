@@ -74,17 +74,6 @@ type middleware = struct {
 		Index  string `default:"index.html"`
 		Root   string `default:"./storage/public"`
 	}
-
-	Supertokens struct {
-		Enable           bool
-		SupertokensDebug bool   `default:"false"`
-		ConnectionURI    string `validate:"required"`
-		APIKey           string `default:""`
-		APIDomain        string `validate:"required"`
-		WebsiteDomain    string `validate:"required"`
-		APIBasePath      string `default:"/auth"`
-		WebsiteBasePath  string `default:"/login"`
-	}
 }
 
 type Config struct {

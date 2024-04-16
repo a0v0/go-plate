@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"runtime"
-	"strings"
 	"time"
 
 	"go_plate/app/middleware"
@@ -15,7 +14,6 @@ import (
 
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
-	futils "github.com/gofiber/fiber/v2/utils"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -56,16 +54,6 @@ func Start(lifecycle fx.Lifecycle, cfg *config.Config, fiber *fiber.App, router 
 					} else {
 						host = "0.0.0.0"
 					}
-				}
-
-				// ASCII Art
-				ascii, err := os.ReadFile("./storage/ascii_art.txt")
-				if err != nil {
-					log.Debug("An unknown error occurred when to print ASCII art!", zap.Error(err))
-				}
-
-				for _, line := range strings.Split(futils.UnsafeString(ascii), "\n") {
-					log.Info(line)
 				}
 
 				// Information message

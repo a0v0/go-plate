@@ -166,7 +166,7 @@ func (pc *ProfileCreate) Mutation() *ProfileMutation {
 // Save creates the Profile in the database.
 func (pc *ProfileCreate) Save(ctx context.Context) (*Profile, error) {
 	pc.defaults()
-	return withHooks[*Profile, ProfileMutation](ctx, pc.sqlSave, pc.mutation, pc.hooks)
+	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -259,13 +259,7 @@ func (pc *ProfileCreate) sqlSave(ctx context.Context) (*Profile, error) {
 func (pc *ProfileCreate) createSpec() (*Profile, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Profile{config: pc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: profile.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
-				Column: profile.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(profile.Table, sqlgraph.NewFieldSpec(profile.FieldID, field.TypeString))
 	)
 	if id, ok := pc.mutation.ID(); ok {
 		_node.ID = id
@@ -311,10 +305,7 @@ func (pc *ProfileCreate) createSpec() (*Profile, *sqlgraph.CreateSpec) {
 			Columns: []string{profile.AccountColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: account.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(account.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -329,11 +320,15 @@ func (pc *ProfileCreate) createSpec() (*Profile, *sqlgraph.CreateSpec) {
 // ProfileCreateBulk is the builder for creating many Profile entities in bulk.
 type ProfileCreateBulk struct {
 	config
+	err      error
 	builders []*ProfileCreate
 }
 
 // Save creates the Profile entities in the database.
 func (pcb *ProfileCreateBulk) Save(ctx context.Context) ([]*Profile, error) {
+	if pcb.err != nil {
+		return nil, pcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(pcb.builders))
 	nodes := make([]*Profile, len(pcb.builders))
 	mutators := make([]Mutator, len(pcb.builders))
@@ -350,8 +345,8 @@ func (pcb *ProfileCreateBulk) Save(ctx context.Context) ([]*Profile, error) {
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, pcb.builders[i+1].mutation)
 				} else {

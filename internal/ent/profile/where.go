@@ -3,7 +3,7 @@
 package profile
 
 import (
-	"frisbane/internal/ent/predicate"
+	"go_plate/internal/ent/predicate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -53,6 +53,16 @@ func IDLT(id string) predicate.Profile {
 // IDLTE applies the LTE predicate on the ID field.
 func IDLTE(id string) predicate.Profile {
 	return predicate.Profile(sql.FieldLTE(FieldID, id))
+}
+
+// IDEqualFold applies the EqualFold predicate on the ID field.
+func IDEqualFold(id string) predicate.Profile {
+	return predicate.Profile(sql.FieldEqualFold(FieldID, id))
+}
+
+// IDContainsFold applies the ContainsFold predicate on the ID field.
+func IDContainsFold(id string) predicate.Profile {
+	return predicate.Profile(sql.FieldContainsFold(FieldID, id))
 }
 
 // Username applies equality check predicate on the "username" field. It's identical to UsernameEQ.
@@ -629,11 +639,7 @@ func HasAccount() predicate.Profile {
 // HasAccountWith applies the HasEdge predicate on the "account" edge with a given conditions (other predicates).
 func HasAccountWith(preds ...predicate.Account) predicate.Profile {
 	return predicate.Profile(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AccountInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, AccountTable, AccountColumn),
-		)
+		step := newAccountStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -644,32 +650,15 @@ func HasAccountWith(preds ...predicate.Account) predicate.Profile {
 
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Profile) predicate.Profile {
-	return predicate.Profile(func(s *sql.Selector) {
-		s1 := s.Clone().SetP(nil)
-		for _, p := range predicates {
-			p(s1)
-		}
-		s.Where(s1.P())
-	})
+	return predicate.Profile(sql.AndPredicates(predicates...))
 }
 
 // Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.Profile) predicate.Profile {
-	return predicate.Profile(func(s *sql.Selector) {
-		s1 := s.Clone().SetP(nil)
-		for i, p := range predicates {
-			if i > 0 {
-				s1.Or()
-			}
-			p(s1)
-		}
-		s.Where(s1.P())
-	})
+	return predicate.Profile(sql.OrPredicates(predicates...))
 }
 
 // Not applies the not operator on the given predicate.
 func Not(p predicate.Profile) predicate.Profile {
-	return predicate.Profile(func(s *sql.Selector) {
-		p(s.Not())
-	})
+	return predicate.Profile(sql.NotPredicates(p))
 }

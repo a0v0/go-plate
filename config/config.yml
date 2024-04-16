@@ -50,15 +50,3 @@ Middleware:
     MaxAge: 3600
     Index: "index.html"
     Root: "./storage/public"
-
-  Supertokens:
-    Enable: true
-    ConnectionURI: http://supertokens:3567
-    APIKey: ""
-    AppName: go_plate
-    APIDomain: http://localhost:8080
-    WebsiteDomain: http://localhost:3000
-    APIBasePath: /auth
-    WebsiteBasePath: /login
-    # To Enable Supertokens Debugging set: SUPERTOKENS_DEBUG=0 or 1 through environment variables or change the value below
-    SupertokensDebug: false

@@ -4,7 +4,6 @@ import (
 	"go_plate/app/module/account"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/swagger"
 )
 
 type Router struct {
@@ -25,9 +24,6 @@ func (r *Router) Register() {
 	r.App.Get("/ping", func(c *fiber.Ctx) error {
 		return c.SendString("Pong! 👋")
 	})
-
-	// Swagger Routes
-	r.App.Get("/swagger/*", swagger.HandlerDefault)
 
 	// Register routes of modules
 	r.AccountRouter.RegisterRoutes()

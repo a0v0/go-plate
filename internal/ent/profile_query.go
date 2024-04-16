@@ -19,7 +19,7 @@ import (
 type ProfileQuery struct {
 	config
 	ctx         *QueryContext
-	order       []OrderFunc
+	order       []profile.OrderOption
 	inters      []Interceptor
 	predicates  []predicate.Profile
 	withAccount *AccountQuery
@@ -55,7 +55,7 @@ func (pq *ProfileQuery) Unique(unique bool) *ProfileQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (pq *ProfileQuery) Order(o ...OrderFunc) *ProfileQuery {
+func (pq *ProfileQuery) Order(o ...profile.OrderOption) *ProfileQuery {
 	pq.order = append(pq.order, o...)
 	return pq
 }
@@ -202,10 +202,12 @@ func (pq *ProfileQuery) AllX(ctx context.Context) []*Profile {
 }
 
 // IDs executes the query and returns a list of Profile IDs.
-func (pq *ProfileQuery) IDs(ctx context.Context) ([]string, error) {
-	var ids []string
+func (pq *ProfileQuery) IDs(ctx context.Context) (ids []string, err error) {
+	if pq.ctx.Unique == nil && pq.path != nil {
+		pq.Unique(true)
+	}
 	ctx = setContextOp(ctx, pq.ctx, "IDs")
-	if err := pq.Select(profile.FieldID).Scan(ctx, &ids); err != nil {
+	if err = pq.Select(profile.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -269,7 +271,7 @@ func (pq *ProfileQuery) Clone() *ProfileQuery {
 	return &ProfileQuery{
 		config:      pq.config,
 		ctx:         pq.ctx.Clone(),
-		order:       append([]OrderFunc{}, pq.order...),
+		order:       append([]profile.OrderOption{}, pq.order...),
 		inters:      append([]Interceptor{}, pq.inters...),
 		predicates:  append([]predicate.Profile{}, pq.predicates...),
 		withAccount: pq.withAccount.Clone(),
@@ -449,20 +451,12 @@ func (pq *ProfileQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (pq *ProfileQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   profile.Table,
-			Columns: profile.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
-				Column: profile.FieldID,
-			},
-		},
-		From:   pq.sql,
-		Unique: true,
-	}
+	_spec := sqlgraph.NewQuerySpec(profile.Table, profile.Columns, sqlgraph.NewFieldSpec(profile.FieldID, field.TypeString))
+	_spec.From = pq.sql
 	if unique := pq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if pq.path != nil {
+		_spec.Unique = true
 	}
 	if fields := pq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))

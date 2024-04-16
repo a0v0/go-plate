@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -37,6 +38,7 @@ type Profile struct {
 	// The values are being populated by the ProfileQuery when eager-loading is set.
 	Edges           ProfileEdges `json:"edges"`
 	account_profile *string
+	selectValues    sql.SelectValues
 }
 
 // ProfileEdges holds the relations/edges for other nodes in the graph.
@@ -51,12 +53,10 @@ type ProfileEdges struct {
 // AccountOrErr returns the Account value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ProfileEdges) AccountOrErr() (*Account, error) {
-	if e.loadedTypes[0] {
-		if e.Account == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: account.Label}
-		}
+	if e.Account != nil {
 		return e.Account, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: account.Label}
 	}
 	return nil, &NotLoadedError{edge: "account"}
 }
@@ -73,7 +73,7 @@ func (*Profile) scanValues(columns []string) ([]any, error) {
 		case profile.ForeignKeys[0]: // account_profile
 			values[i] = new(sql.NullString)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Profile", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -148,9 +148,17 @@ func (pr *Profile) assignValues(columns []string, values []any) error {
 				pr.account_profile = new(string)
 				*pr.account_profile = value.String
 			}
+		default:
+			pr.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the Profile.
+// This includes values selected through modifiers, order, etc.
+func (pr *Profile) Value(name string) (ent.Value, error) {
+	return pr.selectValues.Get(name)
 }
 
 // QueryAccount queries the "account" edge of the Profile entity.
@@ -210,9 +218,3 @@ func (pr *Profile) String() string {
 
 // Profiles is a parsable slice of Profile.
 type Profiles []*Profile
-
-func (pr Profiles) config(cfg config) {
-	for _i := range pr {
-		pr[_i].config = cfg
-	}
-}

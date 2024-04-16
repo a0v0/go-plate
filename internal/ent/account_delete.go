@@ -27,7 +27,7 @@ func (ad *AccountDelete) Where(ps ...predicate.Account) *AccountDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (ad *AccountDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, AccountMutation](ctx, ad.sqlExec, ad.mutation, ad.hooks)
+	return withHooks(ctx, ad.sqlExec, ad.mutation, ad.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -40,15 +40,7 @@ func (ad *AccountDelete) ExecX(ctx context.Context) int {
 }
 
 func (ad *AccountDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: account.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
-				Column: account.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(account.Table, sqlgraph.NewFieldSpec(account.FieldID, field.TypeString))
 	if ps := ad.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

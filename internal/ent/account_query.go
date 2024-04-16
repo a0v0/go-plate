@@ -20,7 +20,7 @@ import (
 type AccountQuery struct {
 	config
 	ctx         *QueryContext
-	order       []OrderFunc
+	order       []account.OrderOption
 	inters      []Interceptor
 	predicates  []predicate.Account
 	withProfile *ProfileQuery
@@ -55,7 +55,7 @@ func (aq *AccountQuery) Unique(unique bool) *AccountQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (aq *AccountQuery) Order(o ...OrderFunc) *AccountQuery {
+func (aq *AccountQuery) Order(o ...account.OrderOption) *AccountQuery {
 	aq.order = append(aq.order, o...)
 	return aq
 }
@@ -202,10 +202,12 @@ func (aq *AccountQuery) AllX(ctx context.Context) []*Account {
 }
 
 // IDs executes the query and returns a list of Account IDs.
-func (aq *AccountQuery) IDs(ctx context.Context) ([]string, error) {
-	var ids []string
+func (aq *AccountQuery) IDs(ctx context.Context) (ids []string, err error) {
+	if aq.ctx.Unique == nil && aq.path != nil {
+		aq.Unique(true)
+	}
 	ctx = setContextOp(ctx, aq.ctx, "IDs")
-	if err := aq.Select(account.FieldID).Scan(ctx, &ids); err != nil {
+	if err = aq.Select(account.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -269,7 +271,7 @@ func (aq *AccountQuery) Clone() *AccountQuery {
 	return &AccountQuery{
 		config:      aq.config,
 		ctx:         aq.ctx.Clone(),
-		order:       append([]OrderFunc{}, aq.order...),
+		order:       append([]account.OrderOption{}, aq.order...),
 		inters:      append([]Interceptor{}, aq.inters...),
 		predicates:  append([]predicate.Account{}, aq.predicates...),
 		withProfile: aq.withProfile.Clone(),
@@ -408,7 +410,7 @@ func (aq *AccountQuery) loadProfile(ctx context.Context, query *ProfileQuery, no
 	}
 	query.withFKs = true
 	query.Where(predicate.Profile(func(s *sql.Selector) {
-		s.Where(sql.InValues(account.ProfileColumn, fks...))
+		s.Where(sql.InValues(s.C(account.ProfileColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -421,7 +423,7 @@ func (aq *AccountQuery) loadProfile(ctx context.Context, query *ProfileQuery, no
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "account_profile" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "account_profile" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -438,20 +440,12 @@ func (aq *AccountQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (aq *AccountQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   account.Table,
-			Columns: account.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
-				Column: account.FieldID,
-			},
-		},
-		From:   aq.sql,
-		Unique: true,
-	}
+	_spec := sqlgraph.NewQuerySpec(account.Table, account.Columns, sqlgraph.NewFieldSpec(account.FieldID, field.TypeString))
+	_spec.From = aq.sql
 	if unique := aq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if aq.path != nil {
+		_spec.Unique = true
 	}
 	if fields := aq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))

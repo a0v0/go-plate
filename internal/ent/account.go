@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -23,7 +24,8 @@ type Account struct {
 	DisableTime time.Time `json:"disable_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AccountQuery when eager-loading is set.
-	Edges AccountEdges `json:"edges"`
+	Edges        AccountEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // AccountEdges holds the relations/edges for other nodes in the graph.
@@ -38,12 +40,10 @@ type AccountEdges struct {
 // ProfileOrErr returns the Profile value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e AccountEdges) ProfileOrErr() (*Profile, error) {
-	if e.loadedTypes[0] {
-		if e.Profile == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: profile.Label}
-		}
+	if e.Profile != nil {
 		return e.Profile, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: profile.Label}
 	}
 	return nil, &NotLoadedError{edge: "profile"}
 }
@@ -58,7 +58,7 @@ func (*Account) scanValues(columns []string) ([]any, error) {
 		case account.FieldDisableTime:
 			values[i] = new(sql.NullTime)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Account", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -90,9 +90,17 @@ func (a *Account) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.DisableTime = value.Time
 			}
+		default:
+			a.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the Account.
+// This includes values selected through modifiers, order, etc.
+func (a *Account) Value(name string) (ent.Value, error) {
+	return a.selectValues.Get(name)
 }
 
 // QueryProfile queries the "profile" edge of the Account entity.
@@ -134,9 +142,3 @@ func (a *Account) String() string {
 
 // Accounts is a parsable slice of Account.
 type Accounts []*Account
-
-func (a Accounts) config(cfg config) {
-	for _i := range a {
-		a[_i].config = cfg
-	}
-}

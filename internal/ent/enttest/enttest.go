@@ -4,11 +4,11 @@ package enttest
 
 import (
 	"context"
-	"frisbane/internal/ent"
+	"go_plate/internal/ent"
 	// required by schema hooks.
-	_ "frisbane/internal/ent/runtime"
+	_ "go_plate/internal/ent/runtime"
 
-	"frisbane/internal/ent/migrate"
+	"go_plate/internal/ent/migrate"
 
 	"entgo.io/ent/dialect/sql/schema"
 )
