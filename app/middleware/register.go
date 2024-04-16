@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"go_plate/pkg/config"
+	"go_plate/internal/config"
 	"go_plate/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"

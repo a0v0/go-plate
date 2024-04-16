@@ -18,6 +18,10 @@
 
 - Tests are written at service level.
 
+## Instructions
+
+- Pass the environment variables in the `.env` file at the root dir or in the environment. See [`.env.example`](.env.example) for reference.
+
 # Reference
 
 - https://github.com/efectn/fiber-boilerplate

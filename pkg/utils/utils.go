@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"mime"
 	"path/filepath"
 	"strings"
 
@@ -31,9 +30,10 @@ func TrimFileExt(fileName string) string {
 	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }
 
-// Generate S3 Object Name
-func GenerateS3ObjectName(mediaID string, mimeType string) string {
-	fileExt, _ := mime.ExtensionsByType(mimeType)
-
-	return filepath.Join(mediaID + fileExt[0])
+// ParseAddr From https://github.com/gofiber/fiber/blob/master/helpers.go#L305.
+func ParseAddr(raw string) (host, port string) {
+	if i := strings.LastIndex(raw, ":"); i != -1 {
+		return raw[:i], raw[i+1:]
+	}
+	return raw, ""
 }

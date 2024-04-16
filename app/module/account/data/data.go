@@ -3,7 +3,8 @@ package data
 import (
 	"context"
 	"fmt"
-	"go_plate/internal/bootstrap/database"
+
+	"go_plate/internal/database"
 	"go_plate/internal/ent"
 	"time"
 )

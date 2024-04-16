@@ -6,18 +6,16 @@ import (
 	"go_plate/pkg/response"
 
 	"github.com/gofiber/fiber/v2"
-	"go.uber.org/zap"
+	"github.com/rs/zerolog/log"
 )
 
 type Service struct {
 	biz *biz.Biz
-	log *zap.Logger
 }
 
-func NewService(b *biz.Biz, log *zap.Logger) *Service {
+func NewService(b *biz.Biz) *Service {
 	return &Service{
 		biz: b,
-		log: log,
 	}
 }
 
@@ -31,7 +29,7 @@ func NewService(b *biz.Biz, log *zap.Logger) *Service {
 func (svc *Service) NotifyServer(c *fiber.Ctx) error {
 	err := svc.biz.NotifyServer("")
 	if err != nil {
-		svc.log.Error("Error while notifying server about new user", zap.Error(err))
+		log.Error().Err(err).Msg("Error while notifying server about new user")
 		return err
 	}
 
@@ -48,7 +46,8 @@ func (svc *Service) NotifyServer(c *fiber.Ctx) error {
 func (svc *Service) GetSelfAccount(c *fiber.Ctx) error {
 	account, err := svc.biz.GetSelfAccount("")
 	if err != nil {
-		svc.log.Error("Error while getting self account", zap.Error(err))
+
+		log.Error().Err(err).Msg("Error while getting self account")
 		return err
 	}
 
@@ -72,7 +71,7 @@ func (svc *Service) GetSelfAccount(c *fiber.Ctx) error {
 func (svc *Service) UpdateSelfAccount(c *fiber.Ctx) error {
 	err := svc.biz.UpdateSelfAccount("", c)
 	if err != nil {
-		svc.log.Error("Error while updating self account", zap.Error(err))
+		log.Error().Err(err).Msg("Error while updating self account")
 		return err
 	}
 	return nil
