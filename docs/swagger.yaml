@@ -1,0 +1,280 @@
+definitions:
+  request.AccountUpdateRequest:
+    properties:
+      bio:
+        description: The bio associated with this account.
+        type: string
+      display_name:
+        description: The display name associated with this account.
+        type: string
+      username:
+        description: The username associated with this account.
+        type: string
+    type: object
+  request.GetSelfAccountResponse:
+    properties:
+      id:
+        description: The ID of the account
+        type: string
+      profile:
+        allOf:
+        - $ref: '#/definitions/request.Profile'
+        description: The profile of the account
+      user_id:
+        description: The ID of the user
+        type: string
+    type: object
+  request.Profile:
+    properties:
+      bio:
+        description: The Bio associated with this account.
+        type: string
+      create_time:
+        description: Time when the account was created.
+        type: string
+      display_name:
+        description: The Display Names associated with this account.
+        type: string
+      id:
+        description: The Profile ID.
+        type: string
+      lang_tag:
+        description: Language associated with this account. This is a BCP-47 language
+          tag.
+        type: string
+      location:
+        description: Location associated with this account.
+        type: string
+      timezone:
+        description: Timezone associated with this account.
+        type: string
+      update_time:
+        description: Time when the profile was last updated.
+        type: string
+      username:
+        description: The Usernames associated with this account.
+        type: string
+    type: object
+  response.Error:
+    properties:
+      code:
+        type: integer
+      messages:
+        items: {}
+        type: array
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      messages:
+        items: {}
+        type: array
+    type: object
+  supertokens.SignupCodeConsume:
+    properties:
+      deviceId:
+        type: string
+      flowType:
+        type: string
+      preAuthSessionId:
+        type: string
+      userInputCode:
+        type: string
+    type: object
+  supertokens.SignupCodeConsumeResponse:
+    properties:
+      createdNewUser:
+        type: boolean
+      status:
+        type: string
+      user:
+        properties:
+          email:
+            type: string
+          id:
+            type: string
+          phoneNumber:
+            type: string
+          timejoined:
+            type: integer
+        type: object
+    type: object
+  supertokens.SignupCodeRequest:
+    properties:
+      email:
+        type: string
+    type: object
+  supertokens.SignupCodeRequestResponse:
+    properties:
+      deviceId:
+        type: string
+      flowType:
+        type: string
+      preAuthSessionId:
+        type: string
+      status:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: developers@frisbane.com
+    name: API Support
+    url: https://www.frisbane.com/support
+  description: This is the API specification for the Frisbane backend.
+  title: Frisbane API Specification
+  version: "1.0"
+paths:
+  /auth/session/refresh:
+    post:
+      description: Refreshes supertoken's passwordless session
+      responses:
+        "200":
+          description: OK
+      summary: Refresh Session
+      tags:
+      - Auth/Passwordless
+  /auth/signinup/code:
+    post:
+      consumes:
+      - application/json
+      description: Send a signup code to the user's email
+      parameters:
+      - description: email
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/supertokens.SignupCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/supertokens.SignupCodeRequestResponse'
+            type: array
+      summary: Signup Code Request
+      tags:
+      - Auth/Passwordless
+  /auth/signinup/code/consume:
+    post:
+      consumes:
+      - application/json
+      description: Consumes a signup code
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/supertokens.SignupCodeConsume'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/supertokens.SignupCodeConsumeResponse'
+            type: array
+      summary: Signup Code Consume
+      tags:
+      - Auth/Passwordless
+  /auth/signout:
+    post:
+      description: Logout a.k.a revoke supertoken's passwordless session
+      responses:
+        "200":
+          description: OK
+      summary: Logout
+      tags:
+      - Auth/Passwordless
+  /notify:
+    post:
+      description: After registering a new user at supertokens, the client must inform
+        the server about the new user, so that server can issue an account for the
+        user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/request.GetSelfAccountResponse'
+            type: array
+        "400":
+          description: Error
+          schema:
+            $ref: '#/definitions/response.Error'
+        "401":
+          description: Error
+          schema:
+            $ref: '#/definitions/response.Error'
+        "403":
+          description: Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Notify server about new user
+      tags:
+      - Server
+  /user/account:
+    get:
+      description: Returns account information of the currently logged in user
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Error
+          schema:
+            $ref: '#/definitions/response.Error'
+        "401":
+          description: Error
+          schema:
+            $ref: '#/definitions/response.Error'
+        "403":
+          description: Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Get Self Account
+      tags:
+      - Account
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Update the  profile of currently logged in user
+        All the fields are required to be specified, even if you don't want to update them.
+        If you want to unset a field, set it to the null value depending on the field type.
+      parameters:
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.AccountUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Error
+          schema:
+            $ref: '#/definitions/response.Error'
+        "401":
+          description: Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Update Self Profile
+      tags:
+      - Account
+swagger: "2.0"

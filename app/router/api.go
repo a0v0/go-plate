@@ -1,20 +1,21 @@
 package router
 
 import (
-	"github.com/efectn/fiber-boilerplate/app/module/article"
-	"github.com/efectn/fiber-boilerplate/storage"
+	"go_plate/app/module/account"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
 )
 
 type Router struct {
 	App           fiber.Router
-	ArticleRouter *article.ArticleRouter
+	AccountRouter *account.Router
 }
 
-func NewRouter(fiber *fiber.App, articleRouter *article.ArticleRouter) *Router {
+func NewRouter(fiber *fiber.App, accountRouter *account.Router) *Router {
 	return &Router{
 		App:           fiber,
-		ArticleRouter: articleRouter,
+		AccountRouter: accountRouter,
 	}
 }
 
@@ -25,16 +26,9 @@ func (r *Router) Register() {
 		return c.SendString("Pong! 👋")
 	})
 
-	r.App.Get("/html", func(c *fiber.Ctx) error {
-		example, err := storage.Private.ReadFile("private/example.html")
-		if err != nil {
-			panic(err)
-		}
-
-		c.Set(fiber.HeaderContentType, fiber.MIMETextHTMLCharsetUTF8)
-		return c.SendString(string(example))
-	})
+	// Swagger Routes
+	r.App.Get("/swagger/*", swagger.HandlerDefault)
 
 	// Register routes of modules
-	r.ArticleRouter.RegisterArticleRoutes()
+	r.AccountRouter.RegisterRoutes()
 }

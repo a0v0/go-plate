@@ -1,0 +1,64 @@
+# Configuration vars for cmd/app
+App:
+  Name: "go_plate"
+  Port: ":8080"
+  IdleTimeout: 5 # As seconds
+  PrintRoutes: false
+  Prefork: true
+  Production: false
+  MaxDisplayPictures: 10
+
+  TLS:
+    Enable: false
+    CertFile: "./storage/selfsigned.crt"
+    KeyFile: "./storage/selfsigned.key"
+
+Email:
+  SMTP:
+    Host: "smtp4dev"
+    Port: 25
+    Password: ""
+    Secure: false
+
+DB:
+  Postgres:
+    DSN: "postgresql://postgres:postgres@postgres-go_plate:5432/go_plate" # <driver>://<username>:<password>@<host>:<port>/<database>
+
+Middleware:
+  Compress:
+    Enable: true
+    Level: 1
+
+  Recover:
+    Enable: true
+
+  Monitor:
+    Enable: false
+    Path: "/monitor"
+
+  Pprof:
+    Enable: true
+
+  Limiter:
+    Enable: false
+    Max: 20
+    ExpSecs: 60
+
+  Filesystem:
+    Enable: false
+    Browse: true
+    MaxAge: 3600
+    Index: "index.html"
+    Root: "./storage/public"
+
+  Supertokens:
+    Enable: true
+    ConnectionURI: http://supertokens:3567
+    APIKey: ""
+    AppName: go_plate
+    APIDomain: http://localhost:8080
+    WebsiteDomain: http://localhost:3000
+    APIBasePath: /auth
+    WebsiteBasePath: /login
+    # To Enable Supertokens Debugging set: SUPERTOKENS_DEBUG=0 or 1 through environment variables or change the value below
+    SupertokensDebug: false

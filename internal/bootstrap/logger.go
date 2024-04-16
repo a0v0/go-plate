@@ -1,33 +1,17 @@
 package bootstrap
 
 import (
-	"os"
+	"go_plate/pkg/config"
 
-	"github.com/efectn/fiber-boilerplate/utils/config"
-	"github.com/gofiber/fiber/v2"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"go.uber.org/zap"
 )
 
-func NewLogger(cfg *config.Config) zerolog.Logger {
-	zerolog.TimeFieldFormat = cfg.Logger.TimeFormat
-
-	if cfg.Logger.Prettier {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
+func NewLogger(cfg *config.Config) (*zap.Logger, error) {
+	if cfg.App.Production {
+		logger, err := zap.NewProduction()
+		return logger, err
 	}
 
-	zerolog.SetGlobalLevel(cfg.Logger.Level)
-
-	//Commented because of breaking logging in request when to use prefork.
-	//log.Logger = log.Hook(PreforkHook{})
-	return log.Hook(PreforkHook{})
-}
-
-// Prefork hook for zerolog
-type PreforkHook struct{}
-
-func (h PreforkHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
-	if fiber.IsChild() {
-		e.Discard()
-	}
+	logger, err := zap.NewDevelopment()
+	return logger, err
 }

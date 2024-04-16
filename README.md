@@ -1,18 +1,23 @@
-# go-plate
+# Server
 
-Boilerplate for go projects.
+## Overview
 
-## Features
+- `Service Layer`: The service layer is the core of the server. This layer communicates with the business layer.
+  - Handles all the requests from the client with minamal validation.
+  - Handles authentication.
+- `Business Layer`: The business layer is responsible for handling all the business logic. This layer communicates with the Database layer.
+  - Handles all the business logic.
+  - Handles authorization.
+  - Handles validation.
+  - Filtering of data.
+- `Database Layer`: It is the layer that communicates with the database.
+  - Handles all the database operations.
+  - DUMB layer.
 
-- Docker based development
--
+`Service Layer` -> `Business Layer` -> `Database Layer`
 
-## Dependencies
+- Tests are written at service level.
 
-- Fiber
-- Entgo
-<!-- TODO: add fx dependency -->
-- Fx
-- ZeroLog
-<!-- TODO: add koanf for dependency injection -->
-- Koanf
+# Reference
+
+- https://github.com/efectn/fiber-boilerplate

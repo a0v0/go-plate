@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/efectn/fiber-boilerplate/utils"
-	"github.com/efectn/fiber-boilerplate/utils/config"
+	"go_plate/pkg/config"
+	"go_plate/pkg/utils"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
@@ -58,4 +59,5 @@ func (m *Middleware) Register() {
 	m.App.Get(m.Cfg.Middleware.Monitor.Path, monitor.New(monitor.Config{
 		Next: utils.IsEnabled(m.Cfg.Middleware.Monitor.Enable),
 	}))
+
 }
